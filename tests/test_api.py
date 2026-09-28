@@ -1,7 +1,6 @@
 # Testar as rotas da API
 from app.models.produto import Produto
 from app.models.categoria import Categoria
-
 from app.models.cliente import Cliente
 
 
@@ -46,12 +45,24 @@ def test_pagina_de_produtos_lista_produto_criado(usuario_fake, db_session):
 
 
 #Exercicio = Criar um cliente e verificar se eçe aparece na tela de clientes 
-def test_pagina_de_clientes_lista_cliente_criado(usuario_fake, db_session):
-   
-    cliente = Cliente(nome="Raul Bissoli", email="raul@gmail.com")
+def test_cliente_aparece_na_tela(usuario_fake, db_session):
+    cliente = Cliente(nome="Raul Bissoli")
     db_session.add(cliente)
     db_session.commit()
 
     resposta = usuario_fake.get("/clientes/")
-
     assert "Raul Bissoli" in resposta.text
+
+def test_criar_produto_no_formulario_web(usuario_fake):
+
+    resposta = usuario_fake.post("/produtos/novo", data={
+        "nome": "Boné","preco": "49.90", "estoque_atual": "15"},
+
+    )
+
+    assert resposta.status_code == 302
+    assert resposta.headers["location"] == "/produtos?criado=ok"
+
+    resposta_lista = usuario_fake.get("/produtos/")
+    assert "Boné" in resposta_lista.text
+
